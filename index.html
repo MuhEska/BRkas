@@ -3,659 +3,468 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kas Komunitas Admin</title>
+    <title>Dashboard Kas Komunitas</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        darkbg: '#0F172A',
-                        darkcard: '#1E293B',
-                        darkaccent: '#334155',
-                        electric: '#3B82F6',
-                        electriclight: '#60A5FA'
-                    }
-                }
-            }
+    <style>
+        .loader {
+            border-top-color: #3B82F6;
+            -webkit-animation: spinner 1.5s linear infinite;
+            animation: spinner 1.5s linear infinite;
         }
-    </script>
+        @-webkit-keyframes spinner {
+            0% { -webkit-transform: rotate(0deg); }
+            100% { -webkit-transform: rotate(360deg); }
+        }
+        @keyframes spinner {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
-<body class="bg-darkbg text-slate-100 font-sans min-h-screen flex flex-col md:flex-row">
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col">
 
-    <!-- Toast Notification -->
-    <div id="toast" class="fixed top-5 right-5 z-50 transform translate-x-full transition-transform duration-300 ease-in-out px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 bg-slate-800 border border-slate-700 text-white hidden">
-        <i id="toastIcon" class="fa-solid fa-circle-check text-green-400 text-xl"></i>
-        <span id="toastMessage">Notifikasi berhasil diproses.</span>
-    </div>
-
-    <!-- Mobile Header -->
-    <div class="md:hidden bg-darkcard border-b border-slate-700 p-4 flex justify-between items-center sticky top-0 z-40">
-        <div class="flex items-center gap-2 font-bold text-lg text-electric">
-            <i class="fa-solid fa-gamepad"></i> KAS KOMUNITAS
-        </div>
-        <button id="menuToggle" class="text-slate-300 hover:text-white focus:outline-none">
-            <i class="fa-solid fa-bars text-2xl"></i>
-        </button>
-    </div>
-
-    <!-- Sidebar Navigation -->
-    <aside id="sidebar" class="w-full md:w-64 bg-darkcard border-r border-slate-800 flex-col justify-between hidden md:flex fixed md:relative z-30 h-screen overflow-y-auto">
-        <div class="p-5">
-            <div class="hidden md:flex items-center gap-3 font-extrabold text-xl text-electric mb-8">
-                <i class="fa-solid fa-gamepad text-2xl"></i>
-                <span>COMMUNITY KAS</span>
-            </div>
-            
-            <nav class="space-y-2">
-                <button onclick="switchTab('dashboard')" class="nav-btn active w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-electric transition" data-tab="dashboard">
-                    <i class="fa-solid fa-chart-pie w-5"></i> Dashboard KPI
-                </button>
-                <button onclick="switchTab('donasi')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-electric transition" data-tab="donasi">
-                    <i class="fa-solid fa-hand-holding-dollar w-5"></i> Input Donasi
-                </button>
-                <button onclick="switchTab('pengeluaran')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-electric transition" data-tab="pengeluaran">
-                    <i class="fa-solid fa-money-bill-transfer w-5"></i> Input Pengeluaran
-                </button>
-                <button onclick="switchTab('member')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-electric transition" data-tab="member">
-                    <i class="fa-solid fa-users w-5"></i> Tambah Member
-                </button>
-                <button onclick="switchTab('data')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-electric transition" data-tab="data">
-                    <i class="fa-solid fa-database w-5"></i> Kelola & Edit Data
-                </button>
-                <button onclick="switchTab('settings')" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-electric transition" data-tab="settings">
-                    <i class="fa-solid fa-gear w-5"></i> Integrasi API
-                </button>
-            </nav>
-        </div>
-
-        <div class="p-4 border-t border-slate-800 text-xs text-slate-500 text-center">
-            Dashboard System v2.0 &copy; 2026
-        </div>
-    </aside>
-
-    <!-- Main Content Body -->
-    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-        
-        <!-- Tab 1: Dashboard -->
-        <section id="tab-dashboard" class="tab-content space-y-6">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h1 class="text-2xl font-bold text-white">Dashboard Overview</h1>
-                    <p class="text-slate-400 text-sm">Ringkasan real-time kas dan statistik anggota.</p>
+    <!-- Top Navigation -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-3">
+                    <i class="fa-solid me-2 fa-wallet text-blue-500 text-2xl"></i>
+                    <span class="font-bold text-lg text-white tracking-wide">KAS KOMUNITAS</span>
                 </div>
-                <button onclick="loadDashboardData()" class="bg-darkcard border border-slate-700 hover:border-electric px-3 py-2 rounded-lg text-sm flex items-center gap-2 text-slate-300 hover:text-white transition">
-                    <i class="fa-solid fa-rotate-right" id="refreshIcon"></i> Refresh Data
-                </button>
+                <div class="flex items-center space-x-2">
+                    <span id="statusIndicator" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span class="w-1.5 h-1.5 mr-1.5 bg-emerald-500 rounded-full animate-pulse"></span> Terhubung
+                    </span>
+                    <button onclick="loadAllData()" class="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg transition" title="Refresh Data">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </button>
+                </div>
             </div>
+        </div>
+    </header>
 
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- Navigation Tabs -->
+        <div class="flex space-x-2 border-b border-slate-700 pb-2 overflow-x-auto">
+            <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition flex items-center space-x-2 bg-blue-600 text-white">
+                <i class="fa-solid fa-chart-line"></i><span>Dashboard</span>
+            </button>
+            <button onclick="switchTab('donasi')" id="tab-donasi" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-hand-holding-dollar"></i><span>Donasi / Pemasukan</span>
+            </button>
+            <button onclick="switchTab('pengeluaran')" id="tab-pengeluaran" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-money-bill-transfer"></i><span>Pengeluaran</span>
+            </button>
+            <button onclick="switchTab('member')" id="tab-member" class="tab-btn px-4 py-2 rounded-lg font-medium text-sm transition flex items-center space-x-2 text-slate-400 hover:text-white hover:bg-slate-800">
+                <i class="fa-solid fa-users"></i><span>Data Member</span>
+            </button>
+        </div>
+
+        <!-- Notification Banner -->
+        <div id="alertBox" class="hidden p-4 rounded-lg text-sm flex items-center justify-between transition">
+            <span id="alertMessage"></span>
+            <button onclick="hideAlert()" class="text-lg opacity-70 hover:opacity-100">&times;</button>
+        </div>
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="sec-dashboard" class="space-y-6">
             <!-- KPI Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-darkcard p-5 rounded-xl border border-slate-800 shadow-md">
-                    <div class="flex justify-between items-center text-slate-400 mb-2">
-                        <span class="text-xs font-semibold uppercase">Total Saldo</span>
-                        <i class="fa-solid fa-wallet text-electric text-lg"></i>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Saldo Kas</span>
+                        <div class="p-2 bg-blue-500/10 text-blue-400 rounded-lg"><i class="fa-solid fa-scale-balanced"></i></div>
                     </div>
-                    <div class="text-2xl font-bold text-white" id="kpiSaldo">Rp 0</div>
+                    <div id="kpiSaldo" class="text-2xl font-bold text-white mt-3">Rp 0</div>
                 </div>
-
-                <div class="bg-darkcard p-5 rounded-xl border border-slate-800 shadow-md">
-                    <div class="flex justify-between items-center text-slate-400 mb-2">
-                        <span class="text-xs font-semibold uppercase">Total Donasi</span>
-                        <i class="fa-solid fa-circle-arrow-down text-emerald-400 text-lg"></i>
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Donasi</span>
+                        <div class="p-2 bg-emerald-500/10 text-emerald-400 rounded-lg"><i class="fa-solid fa-arrow-down-long"></i></div>
                     </div>
-                    <div class="text-2xl font-bold text-emerald-400" id="kpiDonasi">Rp 0</div>
+                    <div id="kpiDonasi" class="text-2xl font-bold text-emerald-400 mt-3">Rp 0</div>
                 </div>
-
-                <div class="bg-darkcard p-5 rounded-xl border border-slate-800 shadow-md">
-                    <div class="flex justify-between items-center text-slate-400 mb-2">
-                        <span class="text-xs font-semibold uppercase">Total Pengeluaran</span>
-                        <i class="fa-solid fa-circle-arrow-up text-rose-400 text-lg"></i>
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Pengeluaran</span>
+                        <div class="p-2 bg-rose-500/10 text-rose-400 rounded-lg"><i class="fa-solid fa-arrow-up-long"></i></div>
                     </div>
-                    <div class="text-2xl font-bold text-rose-400" id="kpiPengeluaran">Rp 0</div>
+                    <div id="kpiPengeluaran" class="text-2xl font-bold text-rose-400 mt-3">Rp 0</div>
                 </div>
-
-                <div class="bg-darkcard p-5 rounded-xl border border-slate-800 shadow-md">
-                    <div class="flex justify-between items-center text-slate-400 mb-2">
-                        <span class="text-xs font-semibold uppercase">Total Member</span>
-                        <i class="fa-solid fa-users text-amber-400 text-lg"></i>
+                <div class="bg-slate-800 border border-slate-700 rounded-xl p-5 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Member</span>
+                        <div class="p-2 bg-purple-500/10 text-purple-400 rounded-lg"><i class="fa-solid fa-user-group"></i></div>
                     </div>
-                    <div class="text-2xl font-bold text-white" id="kpiMember">0</div>
+                    <div id="kpiMember" class="text-2xl font-bold text-white mt-3">0</div>
                 </div>
             </div>
         </section>
 
-        <!-- Tab 2: Input Donasi -->
-        <section id="tab-donasi" class="tab-content hidden max-w-2xl mx-auto">
-            <div class="bg-darkcard p-6 rounded-xl border border-slate-800 shadow-lg space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-hand-holding-dollar text-electric"></i> Input Transaksi Donasi
-                    </h2>
-                    <p class="text-xs text-slate-400">Pemasukan kas baru dari anggota atau pemasok dana.</p>
-                </div>
-                <form id="formDonasi" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Tanggal</label>
-                        <input type="date" id="donasiTanggal" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Nama Member</label>
-                        <input type="text" id="donasiNama" placeholder="Contoh: Alex_Roblox" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Nominal (Rp)</label>
-                        <input type="number" id="donasiNominal" placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Metode Pembayaran</label>
-                        <select id="donasiMetode" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric">
-                            <option value="QRIS">QRIS</option>
-                            <option value="Transfer Bank">Transfer Bank</option>
-                            <option value="Cash">Cash</option>
-                            <option value="Lainnya">Lainnya</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Nama Petugas Penerima</label>
-                        <input type="text" id="donasiPetugas" placeholder="Nama Admin" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Keterangan / Catatan</label>
-                        <textarea id="donasiKeterangan" rows="2" placeholder="Sumbangan acara bulanan" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric"></textarea>
-                    </div>
-                    <button type="submit" class="w-full bg-electric hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Simpan Donasi
-                    </button>
-                </form>
+        <!-- TAB 2: DONASI -->
+        <section id="sec-donasi" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-xl font-bold text-white">Riwayat Donasi & Pemasukan</h2>
+                <button onclick="openModal('modalDonasi')" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-lg text-sm transition flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i><span>Tambah Donasi</span>
+                </button>
             </div>
-        </section>
-
-        <!-- Tab 3: Input Pengeluaran -->
-        <section id="tab-pengeluaran" class="tab-content hidden max-w-2xl mx-auto">
-            <div class="bg-darkcard p-6 rounded-xl border border-slate-800 shadow-lg space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-money-bill-transfer text-rose-500"></i> Input Pengeluaran Kas
-                    </h2>
-                    <p class="text-xs text-slate-400">Pencatatan penggunaan dana kas komunitas.</p>
-                </div>
-                <form id="formPengeluaran" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Tanggal</label>
-                        <input type="date" id="outTanggal" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Kategori</label>
-                        <input type="text" id="outKategori" placeholder="Event / Server / Asset / DLL" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Keperluan</label>
-                        <input type="text" id="outKeperluan" placeholder="Sewa Server Roblox / VIP" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Nominal Pengeluaran (Rp)</label>
-                        <input type="number" id="outNominal" placeholder="100000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Disetujui Oleh</label>
-                        <input type="text" id="outDisetujui" placeholder="Ketua Komunitas / Bendahara" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <button type="submit" class="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold py-3 rounded-lg transition flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Simpan Pengeluaran
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Tab 4: Tambah Member -->
-        <section id="tab-member" class="tab-content hidden max-w-2xl mx-auto">
-            <div class="bg-darkcard p-6 rounded-xl border border-slate-800 shadow-lg space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-user-plus text-amber-400"></i> Pendaftaran Member Baru
-                    </h2>
-                    <p class="text-xs text-slate-400">Tambah data anggota komunitas baru ke database.</p>
-                </div>
-                <form id="formMember" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Nama Roblox</label>
-                        <input type="text" id="memRoblox" placeholder="Username Roblox" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Username Discord</label>
-                        <input type="text" id="memDiscord" placeholder="user#1234" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Desa / Kecamatan (Lokasi)</label>
-                        <input type="text" id="memLokasi" placeholder="Kecamatan, Kota" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">Status Keanggotaan</label>
-                        <select id="memStatus" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric">
-                            <option value="Aktif">Aktif</option>
-                            <option value="Pengurus">Pengurus</option>
-                            <option value="VIP">VIP</option>
-                            <option value="Non-Aktif">Non-Aktif</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-3 rounded-lg transition flex justify-center items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Tambahkan Member
-                    </button>
-                </form>
-            </div>
-        </section>
-
-        <!-- Tab 5: Kelola & Edit Data -->
-        <section id="tab-data" class="tab-content hidden space-y-6">
-            <div>
-                <h2 class="text-xl font-bold text-white">Kelola & Edit Data Admin</h2>
-                <p class="text-xs text-slate-400">Lihat, perbarui, atau hapus baris transaksi dan anggota langsung.</p>
-            </div>
-
-            <!-- Select Table View -->
-            <div class="flex gap-2 border-b border-slate-800 pb-2 overflow-x-auto">
-                <button onclick="switchDataSubTab('donasi')" id="btnSubDonasi" class="px-4 py-2 text-sm font-semibold rounded-lg bg-electric text-white">Data Donasi</button>
-                <button onclick="switchDataSubTab('pengeluaran')" id="btnSubPengeluaran" class="px-4 py-2 text-sm font-semibold rounded-lg bg-darkcard text-slate-400 hover:text-white">Data Pengeluaran</button>
-                <button onclick="switchDataSubTab('member')" id="btnSubMember" class="px-4 py-2 text-sm font-semibold rounded-lg bg-darkcard text-slate-400 hover:text-white">Data Member</button>
-            </div>
-
-            <!-- Table Container -->
-            <div class="bg-darkcard border border-slate-800 rounded-xl overflow-x-auto shadow-md">
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto shadow-lg">
                 <table class="w-full text-left text-sm text-slate-300">
-                    <thead class="bg-slate-900 text-slate-400 text-xs uppercase border-b border-slate-800" id="tableHead">
-                        <!-- Dynamic Header -->
+                    <thead class="bg-slate-700/50 text-slate-200 uppercase text-xs">
+                        <tr>
+                            <th class="p-4">No Tx</th>
+                            <th class="p-4">Tanggal</th>
+                            <th class="p-4">Nama</th>
+                            <th class="p-4">Nominal</th>
+                            <th class="p-4">Metode</th>
+                            <th class="p-4">Petugas</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-800">
-                        <!-- Dynamic Data Rows -->
+                    <tbody id="tableDonasi" class="divide-y divide-slate-700">
+                        <tr><td colspan="7" class="p-4 text-center text-slate-500">Memuat data...</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- Tab 6: Settings API -->
-        <section id="tab-settings" class="tab-content hidden max-w-2xl mx-auto">
-            <div class="bg-darkcard p-6 rounded-xl border border-slate-800 shadow-lg space-y-6">
-                <div>
-                    <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-link text-electric"></i> Pengaturan Web App API
-                    </h2>
-                    <p class="text-xs text-slate-400">Tautkan Web Dashboard ini dengan Google Apps Script Anda.</p>
-                </div>
-                <form id="formSettings" class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-300 mb-1">URL Web App (Google Apps Script)</label>
-                        <input type="url" id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:border-electric" required>
-                    </div>
-                    <button type="submit" class="w-full bg-electric hover:bg-blue-600 text-white font-semibold py-3 rounded-lg transition">
-                        Simpan Integrasi URL
-                    </button>
-                </form>
+        <!-- TAB 3: PENGELUARAN -->
+        <section id="sec-pengeluaran" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-xl font-bold text-white">Riwayat Pengeluaran Kas</h2>
+                <button onclick="openModal('modalPengeluaran')" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-medium rounded-lg text-sm transition flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i><span>Catat Pengeluaran</span>
+                </button>
+            </div>
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto shadow-lg">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-700/50 text-slate-200 uppercase text-xs">
+                        <tr>
+                            <th class="p-4">No Tx</th>
+                            <th class="p-4">Tanggal</th>
+                            <th class="p-4">Kategori</th>
+                            <th class="p-4">Keperluan</th>
+                            <th class="p-4">Nominal</th>
+                            <th class="p-4">Disetujui</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablePengeluaran" class="divide-y divide-slate-700">
+                        <tr><td colspan="7" class="p-4 text-center text-slate-500">Memuat data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- TAB 4: MEMBER -->
+        <section id="sec-member" class="hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h2 class="text-xl font-bold text-white">Master Data Member</h2>
+                <button onclick="openModal('modalMember')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg text-sm transition flex items-center space-x-2">
+                    <i class="fa-solid fa-plus"></i><span>Tambah Member</span>
+                </button>
+            </div>
+            <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-x-auto shadow-lg">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-700/50 text-slate-200 uppercase text-xs">
+                        <tr>
+                            <th class="p-4">ID Member</th>
+                            <th class="p-4">Roblox Name</th>
+                            <th class="p-4">Discord</th>
+                            <th class="p-4">Lokasi</th>
+                            <th class="p-4">Status</th>
+                            <th class="p-4 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableMember" class="divide-y divide-slate-700">
+                        <tr><td colspan="6" class="p-4 text-center text-slate-500">Memuat data...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
     </main>
 
-    <!-- Modal Edit Data -->
-    <div id="editModal" class="fixed inset-0 bg-black/70 flex justify-center items-center z-50 hidden p-4">
-        <div class="bg-darkcard border border-slate-700 rounded-xl p-6 w-full max-w-lg space-y-4 overflow-y-auto max-h-[90vh]">
-            <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-                <h3 class="text-lg font-bold text-white" id="editModalTitle">Edit Data</h3>
-                <button onclick="closeEditModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-            </div>
-            <form id="formEditDynamic" class="space-y-3">
-                <input type="hidden" id="editRowNum">
-                <input type="hidden" id="editSheetType">
-                <div id="dynamicInputs" class="space-y-3"></div>
-                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 rounded-lg transition mt-4">
-                    Perbarui Data
-                </button>
+    <!-- MODAL DONASI -->
+    <div id="modalDonasi" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-white">Form Input Donasi</h3>
+            <form id="formDonasi" onsubmit="submitForm(event, 'donasi')" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Tanggal</label>
+                    <input type="date" name="tanggal" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nama Donatur</label>
+                    <input type="text" name="nama" required placeholder="Contoh: Alex" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nominal (Rp)</label>
+                    <input type="number" name="nominal" required placeholder="50000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Metode Pembayaran</label>
+                    <select name="metode" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                        <option value="QRIS">QRIS</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="E-Wallet">E-Wallet (Gopay/OVO/Dana)</option>
+                        <option value="Robux">Robux</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Petugas / Admin</label>
+                    <input type="text" name="petugas" required placeholder="Nama Admin" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalDonasi')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg text-sm text-white font-medium">Simpan Data</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- JS Application Logic -->
+    <!-- MODAL PENGELUARAN -->
+    <div id="modalPengeluaran" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-white">Form Input Pengeluaran</h3>
+            <form id="formPengeluaran" onsubmit="submitForm(event, 'pengeluaran')" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Tanggal</label>
+                    <input type="date" name="tanggal" required class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Kategori</label>
+                    <input type="text" name="kategori" required placeholder="Event / Server / Asset" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Keperluan / Details</label>
+                    <input type="text" name="keperluan" required placeholder="Sewa VIP Server" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nominal (Rp)</label>
+                    <input type="number" name="nominal" required placeholder="25000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Disetujui Oleh</label>
+                    <input type="text" name="disetujui" required placeholder="Ketua Komunitas" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalPengeluaran')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 rounded-lg text-sm text-white font-medium">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL MEMBER -->
+    <div id="modalMember" class="fixed inset-0 bg-black/70 hidden items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 space-y-4">
+            <h3 class="text-lg font-bold text-white">Form Input Member Baru</h3>
+            <form id="formMember" onsubmit="submitForm(event, 'member')" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Nama Roblox</label>
+                    <input type="text" name="roblox" required placeholder="Username Roblox" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Username Discord</label>
+                    <input type="text" name="discord" placeholder="username#0000" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Lokasi / Kota</label>
+                    <input type="text" name="lokasi" placeholder="Jakarta" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Status Keanggotaan</label>
+                    <select name="status" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
+                        <option value="Aktif">Aktif</option>
+                        <option value="Pengurus">Pengurus</option>
+                        <option value="Non-Aktif">Non-Aktif</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalMember')" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-sm text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-sm text-white font-medium">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPT APPLICATION -->
     <script>
-        let appState = {
-            apiUrl: localStorage.getItem('gas_api_url') || '',
-            donasiList: [],
-            pengeluaranList: [],
-            memberList: [],
-            currentSubTab: 'donasi'
-        };
+        // Tautan Backend Langsung
+        const API_URL = "https://script.google.com/macros/s/AKfycbzracgRL7z3J-lUiVJV8oaZ9hwUt1SN4uOmaIfINHXUtNUUb_--YxxYNTyaFhCpADTg/exec";
 
-        document.addEventListener("DOMContentLoaded", () => {
-            // Set Default Input Date Today
-            const today = new Date().toISOString().split('T')[0];
-            if(document.getElementById('donasiTanggal')) document.getElementById('donasiTanggal').value = today;
-            if(document.getElementById('outTanggal')) document.getElementById('outTanggal').value = today;
-
-            // Load saved API URL
-            if (appState.apiUrl) {
-                document.getElementById('apiUrlInput').value = appState.apiUrl;
-                loadDashboardData();
-            } else {
-                showToast("Silakan atur URL Web App Apps Script di menu Integrasi API terlebih dahulu.", "warning");
-                switchTab('settings');
-            }
-
-            // Mobile Menu Toggle
-            document.getElementById('menuToggle').addEventListener('click', () => {
-                const sidebar = document.getElementById('sidebar');
-                sidebar.classList.toggle('hidden');
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            document.querySelectorAll('section[id^="sec-"]').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-blue-600', 'text-white');
+                el.classList.add('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
             });
 
-            // Submit Handler for Dynamic Edit Modal Form
-            document.getElementById('formEditDynamic').addEventListener('submit', (e) => {
-                e.preventDefault();
-                submitEditForm();
-            });
-        });
-
-        // Toast Notification System
-        function showToast(message, type = "info") {
-            const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toastMessage');
-            const toastIcon = document.getElementById('toastIcon');
-
-            toastMessage.innerText = message;
-            toast.classList.remove('hidden');
-
-            if (type === 'error') {
-                toastIcon.className = "fa-solid fa-circle-xmark text-rose-500 text-xl";
-            } else if (type === 'warning') {
-                toastIcon.className = "fa-solid fa-triangle-exclamation text-amber-400 text-xl";
-            } else {
-                toastIcon.className = "fa-solid fa-circle-check text-green-400 text-xl";
-            }
-
-            toast.classList.remove('translate-x-full');
-
-            setTimeout(() => {
-                toast.classList.add('translate-x-full');
-                setTimeout(() => toast.classList.add('hidden'), 300);
-            }, 3000);
+            document.getElementById(`sec-${tabName}`).classList.remove('hidden');
+            const activeBtn = document.getElementById(`tab-${tabName}`);
+            activeBtn.classList.add('bg-blue-600', 'text-white');
+            activeBtn.classList.remove('text-slate-400', 'hover:text-white', 'hover:bg-slate-800');
         }
 
-        // Format Rupiah Utility
-        function formatRupiah(amount) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount || 0);
+        function formatRupiah(val) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val || 0);
         }
 
-        // Tab Navigation Switcher
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active', 'bg-slate-800', 'text-electric'));
-
-            const selectedTab = document.getElementById(`tab-${tabId}`);
-            if (selectedTab) selectedTab.classList.remove('hidden');
-
-            const activeBtn = document.querySelector(`[data-tab="${tabId}"]`);
-            if (activeBtn) activeBtn.classList.add('active', 'bg-slate-800', 'text-electric');
-
-            if (window.innerWidth < 768) {
-                document.getElementById('sidebar').classList.add('hidden');
-            }
-
-            if(tabId === 'data') renderDataTable();
+        function showAlert(msg, type = 'success') {
+            const box = document.getElementById('alertBox');
+            const msgEl = document.getElementById('alertMessage');
+            box.className = `p-4 rounded-lg text-sm flex items-center justify-between border ${type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-rose-500/10 border-rose-500/30 text-rose-400'}`;
+            msgEl.innerText = msg;
+            box.classList.remove('hidden');
+            setTimeout(hideAlert, 4000);
         }
 
-        // Fetch Data from Google Apps Script
-        async function loadDashboardData() {
-            if (!appState.apiUrl) return;
+        function hideAlert() {
+            document.getElementById('alertBox').classList.add('hidden');
+        }
 
-            const refreshIcon = document.getElementById('refreshIcon');
-            if (refreshIcon) refreshIcon.classList.add('fa-spin');
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); document.getElementById(id).classList.add('flex'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); document.getElementById(id).classList.remove('flex'); }
 
+        // Fetch Data dari API Apps Script
+        async function loadAllData() {
             try {
-                const response = await fetch(appState.apiUrl);
-                const data = await response.json();
+                const res = await fetch(API_URL);
+                const data = await res.json();
 
                 if (data.status === 'success') {
+                    // Render KPI
                     document.getElementById('kpiSaldo').innerText = formatRupiah(data.totalSaldo);
                     document.getElementById('kpiDonasi').innerText = formatRupiah(data.totalDonasi);
                     document.getElementById('kpiPengeluaran').innerText = formatRupiah(data.totalPengeluaran);
-                    document.getElementById('kpiMember').innerText = (data.totalMember || 0) + " Orang";
+                    document.getElementById('kpiMember').innerText = data.totalMember;
 
-                    appState.donasiList = data.donasiList || [];
-                    appState.pengeluaranList = data.pengeluaranList || [];
-                    appState.memberList = data.memberList || [];
-
-                    if(!document.getElementById('tab-data').classList.contains('hidden')) {
-                        renderDataTable();
+                    // Render Tabel Donasi
+                    const tDonasi = document.getElementById('tableDonasi');
+                    if (data.donasiList.length === 0) {
+                        tDonasi.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada data donasi</td></tr>`;
+                    } else {
+                        tDonasi.innerHTML = data.donasiList.map(item => `
+                            <tr class="hover:bg-slate-700/30">
+                                <td class="p-4 font-mono text-xs text-blue-400">${item.noTx}</td>
+                                <td class="p-4">${item.tanggal}</td>
+                                <td class="p-4 font-medium text-white">${item.nama}</td>
+                                <td class="p-4 text-emerald-400 font-semibold">${formatRupiah(item.nominal)}</td>
+                                <td class="p-4"><span class="px-2 py-0.5 rounded text-xs bg-slate-700 border border-slate-600">${item.metode}</span></td>
+                                <td class="p-4">${item.petugas}</td>
+                                <td class="p-4 text-center">
+                                    <button onclick="deleteRow('donasi', ${item.rowNum})" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('');
                     }
-                } else {
-                    showToast("Gagal mengambil data: " + data.message, "error");
+
+                    // Render Tabel Pengeluaran
+                    const tOut = document.getElementById('tablePengeluaran');
+                    if (data.pengeluaranList.length === 0) {
+                        tOut.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-slate-500">Belum ada data pengeluaran</td></tr>`;
+                    } else {
+                        tOut.innerHTML = data.pengeluaranList.map(item => `
+                            <tr class="hover:bg-slate-700/30">
+                                <td class="p-4 font-mono text-xs text-rose-400">${item.noTx}</td>
+                                <td class="p-4">${item.tanggal}</td>
+                                <td class="p-4"><span class="px-2 py-0.5 rounded text-xs bg-slate-700 border border-slate-600">${item.kategori}</span></td>
+                                <td class="p-4 font-medium text-white">${item.keperluan}</td>
+                                <td class="p-4 text-rose-400 font-semibold">${formatRupiah(item.nominal)}</td>
+                                <td class="p-4">${item.disetujui}</td>
+                                <td class="p-4 text-center">
+                                    <button onclick="deleteRow('pengeluaran', ${item.rowNum})" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
+
+                    // Render Tabel Member
+                    const tMember = document.getElementById('tableMember');
+                    if (data.memberList.length === 0) {
+                        tMember.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Belum ada data member</td></tr>`;
+                    } else {
+                        tMember.innerHTML = data.memberList.map(item => `
+                            <tr class="hover:bg-slate-700/30">
+                                <td class="p-4 font-mono text-xs text-purple-400">${item.idMember}</td>
+                                <td class="p-4 font-medium text-white">${item.roblox}</td>
+                                <td class="p-4">${item.discord || '-'}</td>
+                                <td class="p-4">${item.lokasi || '-'}</td>
+                                <td class="p-4"><span class="px-2 py-0.5 rounded text-xs ${item.status === 'Aktif' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-slate-700 text-slate-300'}">${item.status}</span></td>
+                                <td class="p-4 text-center">
+                                    <button onclick="deleteRow('member', ${item.rowNum})" class="text-rose-400 hover:text-rose-300 p-1"><i class="fa-solid fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        `).join('');
+                    }
                 }
             } catch (err) {
-                showToast("Terjadi kesalahan jaringan atau CORS API.", "error");
-            } finally {
-                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                showAlert("Gagal memuat data dari spreadsheet", "error");
             }
         }
 
-        // Submit Form Handler (POST API Mode)
-        async function sendFormData(params, formId) {
-            if (!appState.apiUrl) {
-                showToast("URL API belum dikonfigurasi!", "error");
-                return;
-            }
-
-            const searchParams = new URLSearchParams(params);
+        // Simpan Form Data Baru
+        async function submitForm(e, type) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            params.append('action', 'create');
+            params.append('type', type);
 
             try {
-                showToast("Mengirim data...", "info");
-                await fetch(appState.apiUrl, {
+                const res = await fetch(API_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: searchParams.toString()
+                    body: params
                 });
-
-                showToast("Berhasil mengirim data!", "success");
-                if (formId) document.getElementById(formId).reset();
-                setTimeout(() => loadDashboardData(), 1500);
-
+                const resData = await res.json();
+                if (resData.status === 'success') {
+                    showAlert('Data berhasil disimpan!');
+                    form.reset();
+                    closeModal(`modal${type.charAt(0).toUpperCase() + type.slice(1)}`);
+                    loadAllData();
+                } else {
+                    showAlert('Gagal menyimpan data: ' + resData.message, 'error');
+                }
             } catch (err) {
-                showToast("Gagal menyimpan data!", "error");
+                showAlert('Gagal menghubungi server', 'error');
             }
         }
 
-        // Form Event Listeners
-        document.getElementById('formDonasi').addEventListener('submit', (e) => {
-            e.preventDefault();
-            sendFormData({
-                type: 'donasi',
-                tanggal: document.getElementById('donasiTanggal').value,
-                nama: document.getElementById('donasiNama').value,
-                nominal: document.getElementById('donasiNominal').value,
-                metode: document.getElementById('donasiMetode').value,
-                petugas: document.getElementById('donasiPetugas').value,
-                keterangan: document.getElementById('donasiKeterangan').value
-            }, 'formDonasi');
-        });
+        // Hapus Data
+        async function deleteRow(type, rowNum) {
+            if (!confirm("Apakah Anda yakin ingin menghapus data ini?")) return;
+            const params = new URLSearchParams();
+            params.append('action', 'delete');
+            params.append('type', type);
+            params.append('rowNum', rowNum);
 
-        document.getElementById('formPengeluaran').addEventListener('submit', (e) => {
-            e.preventDefault();
-            sendFormData({
-                type: 'pengeluaran',
-                tanggal: document.getElementById('outTanggal').value,
-                kategori: document.getElementById('outKategori').value,
-                keperluan: document.getElementById('outKeperluan').value,
-                nominal: document.getElementById('outNominal').value,
-                disetujui: document.getElementById('outDisetujui').value
-            }, 'formPengeluaran');
-        });
-
-        document.getElementById('formMember').addEventListener('submit', (e) => {
-            e.preventDefault();
-            sendFormData({
-                type: 'member',
-                roblox: document.getElementById('memRoblox').value,
-                discord: document.getElementById('memDiscord').value,
-                lokasi: document.getElementById('memLokasi').value,
-                status: document.getElementById('memStatus').value
-            }, 'formMember');
-        });
-
-        document.getElementById('formSettings').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const url = document.getElementById('apiUrlInput').value.trim();
-            localStorage.setItem('gas_api_url', url);
-            appState.apiUrl = url;
-            showToast("URL API berhasil disimpan!", "success");
-            loadDashboardData();
-        });
-
-        // Switch Sub Tab Admin Data Management
-        function switchDataSubTab(tab) {
-            appState.currentSubTab = tab;
-            document.getElementById('btnSubDonasi').className = tab === 'donasi' ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-electric text-white' : 'px-4 py-2 text-sm font-semibold rounded-lg bg-darkcard text-slate-400 hover:text-white';
-            document.getElementById('btnSubPengeluaran').className = tab === 'pengeluaran' ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-electric text-white' : 'px-4 py-2 text-sm font-semibold rounded-lg bg-darkcard text-slate-400 hover:text-white';
-            document.getElementById('btnSubMember').className = tab === 'member' ? 'px-4 py-2 text-sm font-semibold rounded-lg bg-electric text-white' : 'px-4 py-2 text-sm font-semibold rounded-lg bg-darkcard text-slate-400 hover:text-white';
-            renderDataTable();
-        }
-
-        // Render Data Table Function
-        function renderDataTable() {
-            const thead = document.getElementById('tableHead');
-            const tbody = document.getElementById('tableBody');
-            thead.innerHTML = '';
-            tbody.innerHTML = '';
-
-            if (appState.currentSubTab === 'donasi') {
-                thead.innerHTML = `<tr><th class="p-3">No Tx</th><th class="p-3">Tanggal</th><th class="p-3">Member</th><th class="p-3">Nominal</th><th class="p-3">Metode</th><th class="p-3 text-center">Aksi</th></tr>`;
-                if(appState.donasiList.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Kosong</td></tr>`;
-                appState.donasiList.forEach(item => {
-                    tbody.innerHTML += `<tr class="hover:bg-slate-800/50">
-                        <td class="p-3 font-mono text-electric">${item.noTx}</td>
-                        <td class="p-3">${item.tanggal}</td>
-                        <td class="p-3 font-semibold">${item.nama}</td>
-                        <td class="p-3 text-emerald-400 font-bold">${formatRupiah(item.nominal)}</td>
-                        <td class="p-3">${item.metode}</td>
-                        <td class="p-3 text-center space-x-2">
-                            <button onclick="openEditModal('donasi', ${item.rowNum})" class="text-amber-400 hover:text-amber-300"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteDataRow('donasi', ${item.rowNum})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    body: params
                 });
-            } else if (appState.currentSubTab === 'pengeluaran') {
-                thead.innerHTML = `<tr><th class="p-3">No Tx</th><th class="p-3">Tanggal</th><th class="p-3">Kategori</th><th class="p-3">Keperluan</th><th class="p-3">Nominal</th><th class="p-3 text-center">Aksi</th></tr>`;
-                if(appState.pengeluaranList.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Kosong</td></tr>`;
-                appState.pengeluaranList.forEach(item => {
-                    tbody.innerHTML += `<tr class="hover:bg-slate-800/50">
-                        <td class="p-3 font-mono text-rose-400">${item.noTx}</td>
-                        <td class="p-3">${item.tanggal}</td>
-                        <td class="p-3">${item.kategori}</td>
-                        <td class="p-3">${item.keperluan}</td>
-                        <td class="p-3 text-rose-400 font-bold">${formatRupiah(item.nominal)}</td>
-                        <td class="p-3 text-center space-x-2">
-                            <button onclick="openEditModal('pengeluaran', ${item.rowNum})" class="text-amber-400 hover:text-amber-300"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteDataRow('pengeluaran', ${item.rowNum})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-                });
-            } else if (appState.currentSubTab === 'member') {
-                thead.innerHTML = `<tr><th class="p-3">ID Member</th><th class="p-3">Roblox</th><th class="p-3">Discord</th><th class="p-3">Lokasi</th><th class="p-3">Status</th><th class="p-3 text-center">Aksi</th></tr>`;
-                if(appState.memberList.length === 0) tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500">Kosong</td></tr>`;
-                appState.memberList.forEach(item => {
-                    tbody.innerHTML += `<tr class="hover:bg-slate-800/50">
-                        <td class="p-3 font-mono text-amber-400">${item.idMember || '-'}</td>
-                        <td class="p-3 font-semibold">${item.roblox}</td>
-                        <td class="p-3">${item.discord}</td>
-                        <td class="p-3">${item.lokasi}</td>
-                        <td class="p-3"><span class="px-2 py-1 rounded-md text-xs font-bold bg-slate-800 border border-slate-700">${item.status}</span></td>
-                        <td class="p-3 text-center space-x-2">
-                            <button onclick="openEditModal('member', ${item.rowNum})" class="text-amber-400 hover:text-amber-300"><i class="fa-solid fa-pen-to-square"></i></button>
-                            <button onclick="deleteDataRow('member', ${item.rowNum})" class="text-rose-500 hover:text-rose-400"><i class="fa-solid fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-                });
+                const resData = await res.json();
+                if (resData.status === 'success') {
+                    showAlert('Data berhasil dihapus');
+                    loadAllData();
+                }
+            } catch (err) {
+                showAlert('Gagal menghapus data', 'error');
             }
         }
 
-        // Open Edit Modal Function
-        function openEditModal(type, rowNum) {
-            const modal = document.getElementById('editModal');
-            const container = document.getElementById('dynamicInputs');
-            document.getElementById('editRowNum').value = rowNum;
-            document.getElementById('editSheetType').value = type;
-            container.innerHTML = '';
-
-            if (type === 'donasi') {
-                const item = appState.donasiList.find(i => i.rowNum === rowNum);
-                if (!item) return;
-                document.getElementById('editModalTitle').innerText = `Edit Donasi (${item.noTx})`;
-                container.innerHTML = `
-                    <div><label class="block text-xs font-semibold mb-1">Tanggal</label><input type="date" id="editTanggal" value="${item.tanggal}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Nama Member</label><input type="text" id="editNama" value="${item.nama}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Nominal</label><input type="number" id="editNominal" value="${item.nominal}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Metode</label><input type="text" id="editMetode" value="${item.metode}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                `;
-            } else if (type === 'pengeluaran') {
-                const item = appState.pengeluaranList.find(i => i.rowNum === rowNum);
-                if (!item) return;
-                document.getElementById('editModalTitle').innerText = `Edit Pengeluaran (${item.noTx})`;
-                container.innerHTML = `
-                    <div><label class="block text-xs font-semibold mb-1">Tanggal</label><input type="date" id="editTanggal" value="${item.tanggal}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Kategori</label><input type="text" id="editKategori" value="${item.kategori}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Keperluan</label><input type="text" id="editKeperluan" value="${item.keperluan}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Nominal</label><input type="number" id="editNominal" value="${item.nominal}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                `;
-            } else if (type === 'member') {
-                const item = appState.memberList.find(i => i.rowNum === rowNum);
-                if (!item) return;
-                document.getElementById('editModalTitle').innerText = `Edit Member (${item.roblox})`;
-                container.innerHTML = `
-                    <div><label class="block text-xs font-semibold mb-1">Nama Roblox</label><input type="text" id="editRoblox" value="${item.roblox}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Discord</label><input type="text" id="editDiscord" value="${item.discord}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Lokasi</label><input type="text" id="editLokasi" value="${item.lokasi}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                    <div><label class="block text-xs font-semibold mb-1">Status</label><input type="text" id="editStatus" value="${item.status}" class="w-full bg-slate-900 border border-slate-700 rounded p-2 text-white"></div>
-                `;
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        // Close Edit Modal
-        function closeEditModal() {
-            document.getElementById('editModal').classList.add('hidden');
-        }
-
-        // Submit Form Edit Modal
-        function submitEditForm() {
-            const type = document.getElementById('editSheetType').value;
-            const rowNum = document.getElementById('editRowNum').value;
-            let params = { action: 'edit', type: type, rowNum: rowNum };
-
-            if (type === 'donasi') {
-                params.tanggal = document.getElementById('editTanggal').value;
-                params.nama = document.getElementById('editNama').value;
-                params.nominal = document.getElementById('editNominal').value;
-                params.metode = document.getElementById('editMetode').value;
-            } else if (type === 'pengeluaran') {
-                params.tanggal = document.getElementById('editTanggal').value;
-                params.kategori = document.getElementById('editKategori').value;
-                params.keperluan = document.getElementById('editKeperluan').value;
-                params.nominal = document.getElementById('editNominal').value;
-            } else if (type === 'member') {
-                params.roblox = document.getElementById('editRoblox').value;
-                params.discord = document.getElementById('editDiscord').value;
-                params.lokasi = document.getElementById('editLokasi').value;
-                params.status = document.getElementById('editStatus').value;
-            }
-
-            closeEditModal();
-            sendFormData(params);
-        }
-
-        // Delete Row Function
-        function deleteDataRow(type, rowNum) {
-            if (confirm(`Apakah Anda yakin ingin menghapus baris data ini?`)) {
-                sendFormData({ action: 'delete', type: type, rowNum: rowNum });
-            }
-        }
+        // Auto Load Pertama Kali
+        window.onload = loadAllData;
     </script>
 </body>
 </html>
